@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="theme-color" content="#0a0a0a">
+	<title>حاسبة الغياب</title>
+
+	<!-- 1. Include React and ReactDOM from a CDN -->
+	<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+	<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+	<!-- 2. Include Babel to transpile JSX in the browser -->
+	<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+	<!-- 3. All CSS styles from styles.css are placed here -->
+	<style>
+		/* styles.css */
+		@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap");
+		@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap");
+
+		:root {
+			--color-primary-blue: #4a90e2;
+			--color-secondary-blue: #2c3e50;
+			--color-sky-blue: #87ceeb;
+			--color-danger-red: #e74c3c;
+			--color-warning-gold: #f0c419;
+			--color-bonus-green: #2ecc71;
+			--color-bg: #0a0a0a;
+			--color-card: rgba(26, 26, 26, 0.7);
+			--color-border: #333333;
+			--color-text: #e0e0e0;
+			--color-text-muted: #999999;
+			--color-purple: var(--color-primary-blue);
+			--color-magenta: var(--color-danger-red);
+			--color-cyan: var(--color-primary-blue);
+			--color-warning: var(--color-warning-gold);
+			--font-body: "Cairo", sans-serif;
+			--font-title: "IBM Plex Sans Arabic", sans-serif;
+			--radius: 12px;
+			--transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: var(--font-body);
+			background-color: var(--color-bg);
+			color: var(--color-text);
+			direction: rtl;
+			overflow-x: hidden;
+		}
+
+		.app {
+			min-height: 100vh;
+			position: relative;
+			display: flex;
+			justify-content: center;
+			padding: 2rem 1rem;
+			opacity: 0;
+			transform: scale(0.98);
+			transition: opacity 0.5s ease, transform 0.5s ease;
+		}
+		
+		.app.loaded {
+			opacity: 1;
+			transform: scale(1);
+		}
+
+		.aurora-bg {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			overflow: hidden;
+			z-index: -1;
+		}
+
+		.aurora-dot {
+			position: absolute;
+			border-radius: 50%;
+			filter: blur(100px);
+			opacity: 0.3;
+		}
+
+		.aurora-dot-1 {
+			width: 40vw;
+			height: 40vw;
+			background-color: var(--color-primary-blue);
+			top: 10%;
+			left: 5%;
+			animation: move-aurora 20s infinite alternate ease-in-out;
+		}
+
+		.aurora-dot-2 {
+			width: 35vw;
+			height: 35vw;
+			background-color: var(--color-secondary-blue);
+			bottom: 15%;
+			right: 10%;
+			animation: move-aurora 25s infinite alternate-reverse ease-in-out;
+		}
+
+		@keyframes move-aurora {
+			from {
+				transform: translate(0, 0) rotate(0deg);
+			}
+			to {
+				transform: translate(10vw, 15vh) rotate(180deg);
+			}
+		}
+
+		.container {
+			width: 100%;
+			max-width: 600px;
+			z-index: 1;
+			display: flex;
+			flex-direction: column;
+			gap: 2rem;
+		}
+
+		.header {
+			text-align: center;
+		}
+
+		.title {
+			font-family: var(--font-title);
+			font-weight: 700;
+			font-size: 2.8rem;
+			background: linear-gradient(
+				90deg,
+				var(--color-primary-blue),
+				var(--color-sky-blue)
+			);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			margin-bottom: 0.5rem;
+		}
+
+		.subtitle {
+			color: var(--color-text-muted);
+			font-size: 1rem;
+		}
+
+		.calculator-card,
+		.course-list-card {
+			background: var(--color-card);
+			border: 1px solid var(--color-border);
+			border-radius: var(--radius);
+			padding: 1.5rem;
+			backdrop-filter: blur(12px);
+			-webkit-backdrop-filter: blur(12px);
+			transition: var(--transition);
+			box-shadow: 0 0 0 1px transparent;
+		}
+		.calculator-card.safe {
+			--status-color: var(--color-cyan);
+		}
+		.calculator-card.warning {
+			--status-color: var(--color-warning);
+		}
+		.calculator-card.danger {
+			--status-color: var(--color-magenta);
+		}
+		.calculator-card:focus-within,
+		.calculator-card:hover {
+			box-shadow: 0 0 0 1px var(--status-color, var(--color-border));
+		}
+
+		.card-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 1.5rem;
+		}
+		.card-header h2 {
+			font-family: var(--font-title);
+			font-weight: 700;
+			font-size: 1.7rem;
+			color: #fff;
+		}
+
+		.clear-button {
+			background: none;
+			border: none;
+			color: var(--color-text-muted);
+			font-size: 1.5rem;
+			cursor: pointer;
+			transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+		}
+		.clear-button:hover {
+			color: var(--color-magenta);
+			transform: rotate(90deg);
+		}
+
+		.input-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+			gap: 1rem;
+		}
+		.input-group label {
+			display: block;
+			font-size: 0.9rem;
+			margin-bottom: 0.5rem;
+			color: var(--color-text-muted);
+		}
+		.input-group input {
+			width: 100%;
+			background: rgba(0, 0, 0, 0.3);
+			border: 1px solid var(--color-border);
+			border-radius: 8px;
+			padding: 0.75rem;
+			color: var(--color-text);
+			font-family: var(--font-body);
+			font-size: 1rem;
+			transition: var(--transition);
+		}
+
+		.select-wrapper {
+			position: relative;
+		}
+
+		.select-wrapper::after {
+			content: "";
+			position: absolute;
+			top: 50%;
+			left: 15px;
+			width: 0;
+			height: 0;
+			border: 6px solid transparent;
+			border-top-color: var(--color-text-muted);
+			transform: translateY(-50%);
+			pointer-events: none;
+			transition: var(--transition);
+		}
+
+		.select-wrapper:hover::after {
+			border-top-color: var(--color-text);
+		}
+
+		.input-group select {
+			width: 100%;
+			background: rgba(0, 0, 0, 0.3);
+			border: 1px solid var(--color-border);
+			border-radius: 8px;
+			padding: 0.75rem;
+			padding-left: 2.5rem;
+			color: var(--color-text);
+			font-family: var(--font-body);
+			font-size: 1rem;
+			transition: var(--transition);
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			appearance: none;
+			cursor: pointer;
+		}
+
+		.input-group option {
+			background: var(--color-secondary-blue);
+			color: var(--color-text);
+		}
+
+		.input-group input:focus,
+		.input-group select:focus {
+			outline: none;
+			border-color: var(--status-color, var(--color-cyan));
+			box-shadow: 0 0 10px 0px var(--status-color, var(--color-cyan));
+		}
+
+		.bonus-toggle-container {
+			padding: 1rem 0;
+			margin-bottom: 0.5rem;
+			display: flex;
+			justify-content: center;
+		}
+
+		.toggle-label-wrapper {
+			display: inline-flex;
+			align-items: center;
+			cursor: pointer;
+			color: var(--color-text);
+		}
+
+		.toggle-label-wrapper input[type="checkbox"] {
+			display: none;
+		}
+
+		.toggle-switch {
+			position: relative;
+			width: 50px;
+			height: 26px;
+			background-color: var(--color-border);
+			border-radius: 13px;
+			transition: background-color 0.2s ease-in-out;
+		}
+
+		.toggle-switch::before {
+			content: "";
+			position: absolute;
+			top: 3px;
+			left: 4px;
+			width: 20px;
+			height: 20px;
+			background-color: #fff;
+			border-radius: 50%;
+			transition: transform 0.2s ease-in-out;
+		}
+
+		.toggle-label-wrapper input:checked + .toggle-switch {
+			background-color: var(--color-primary-blue);
+		}
+
+		.toggle-label-wrapper input:checked + .toggle-switch::before {
+			transform: translateX(24px);
+		}
+
+		.toggle-text {
+			margin-right: 12px;
+			font-weight: 600;
+		}
+
+		.result-section {
+			display: flex;
+			align-items: center;
+			gap: 1.5rem;
+			margin-bottom: 1.5rem;
+			padding: 1rem;
+			background: rgba(0, 0, 0, 0.2);
+			border-radius: var(--radius);
+		}
+
+		.chart-container {
+			position: relative;
+			width: 120px;
+			height: 120px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		.donut-chart {
+			width: 100%;
+			height: 100%;
+			transform: rotate(-90deg);
+		}
+		.donut-chart-bg {
+			fill: none;
+			stroke: var(--color-border);
+			stroke-width: 10;
+		}
+		.donut-chart-fg {
+			fill: none;
+			stroke-width: 10;
+			stroke-linecap: round;
+			transition: stroke-dashoffset 0.5s ease;
+		}
+		.donut-chart-fg.safe {
+			stroke: var(--color-cyan);
+		}
+		.donut-chart-fg.warning {
+			stroke: var(--color-warning);
+		}
+		.donut-chart-fg.danger {
+			stroke: var(--color-magenta);
+		}
+
+		.chart-info {
+			position: absolute;
+			text-align: center;
+		}
+		.chart-info span {
+			font-family: var(--font-title);
+			font-weight: 700;
+			font-size: 2rem;
+			color: #fff;
+		}
+		.chart-info p {
+			font-size: 0.8rem;
+			color: var(--color-text-muted);
+		}
+
+		.result-details {
+			flex: 1;
+		}
+		.detail-item {
+			display: flex;
+			justify-content: space-between;
+			align-items: baseline;
+			padding: 0.5rem 0;
+			font-size: 0.9rem;
+		}
+		.detail-item strong {
+			font-size: 1.1rem;
+			color: #fff;
+		}
+
+		.predictive-text {
+			margin-top: 1rem;
+			padding: 0.75rem;
+			background: rgba(0, 0, 0, 0.3);
+			border-radius: 8px;
+			text-align: center;
+			font-weight: 600;
+			border-right: 3px solid var(--status-color, var(--color-border));
+			color: var(--status-color, var(--color-text));
+		}
+
+		.bonus-box {
+			display: flex;
+			align-items: center;
+			gap: 0.8rem;
+			margin-top: 1rem;
+			background: linear-gradient(
+				90deg,
+				rgba(46, 204, 113, 0.15),
+				rgba(46, 204, 113, 0.05)
+			);
+			padding: 0.75rem 1rem;
+			border-radius: var(--radius);
+			border: 1px solid rgba(46, 204, 113, 0.3);
+			box-shadow: 0 0 15px rgba(46, 204, 113, 0.1);
+		}
+
+		.bonus-icon {
+			color: var(--color-bonus-green);
+			font-size: 1.6rem;
+			flex-shrink: 0;
+		}
+
+		.bonus-text-content {
+			flex: 1;
+		}
+
+		.bonus-title {
+			font-weight: 700;
+			color: #fff;
+			font-size: 0.9rem;
+		}
+
+		.bonus-subtitle {
+			font-size: 0.8rem;
+			color: var(--color-text-muted);
+			margin-top: 0.25rem;
+		}
+
+		.save-button {
+			width: 100%;
+			padding: 0.8rem;
+			font-family: var(--font-body);
+			font-size: 1.1rem;
+			font-weight: 600;
+			border: none;
+			border-radius: 8px;
+			cursor: pointer;
+			background: linear-gradient(
+				90deg,
+				var(--color-primary-blue),
+				var(--color-secondary-blue)
+			);
+			color: #fff;
+			transition: var(--transition);
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			gap: 0.5rem;
+		}
+		.save-button:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+		}
+
+		.course-list {
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+			margin-top: 1.5rem;
+		}
+		.course-item {
+			display: grid;
+			grid-template-columns: 1fr auto;
+			grid-template-rows: auto auto;
+			gap: 0.5rem 1rem;
+			padding: 1rem;
+			background: rgba(0, 0, 0, 0.2);
+			border-radius: 8px;
+			border-right: 4px solid var(--color-cyan);
+			transition: var(--transition);
+		}
+		.course-item.denied {
+			border-right-color: var(--color-magenta);
+		}
+		.course-item:hover {
+			transform: translateX(5px);
+			background: rgba(0, 0, 0, 0.4);
+		}
+		.course-info {
+			grid-column: 1 / 2;
+		}
+		.course-info h3 {
+			font-family: var(--font-title);
+			font-size: 1.3rem;
+			font-weight: 400;
+			color: #fff;
+		}
+		.course-info p {
+			color: var(--color-text-muted);
+		}
+		.course-progress {
+			grid-column: 1 / 3;
+			width: 100%;
+			height: 6px;
+			background: var(--color-border);
+			border-radius: 3px;
+		}
+		.course-progress-bar {
+			height: 100%;
+			background: var(--color-cyan);
+			border-radius: 3px;
+			transition: var(--transition);
+		}
+		.course-item.denied .course-progress-bar {
+			background: var(--color-magenta);
+		}
+		.course-actions {
+			grid-column: 2 / 3;
+			grid-row: 1 / 2;
+			display: flex;
+			gap: 0.5rem;
+		}
+		.course-actions button {
+			background: none;
+			border: none;
+			color: var(--color-text-muted);
+			font-size: 1.2rem;
+			cursor: pointer;
+			transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+		}
+		.course-actions button:hover {
+			color: #fff;
+		}
+		.course-actions button[title="تعديل"]:hover {
+			color: var(--color-cyan);
+		}
+		.course-actions button[title="حذف"]:hover {
+			color: var(--color-magenta);
+		}
+
+		.footer {
+			text-align: center;
+			color: var(--color-text-muted);
+			font-size: 0.9rem;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding-top: 1rem;
+			border-top: 1px solid var(--color-border);
+		}
+		.footer a {
+			color: var(--color-text-muted);
+			font-size: 1.5rem;
+			transition: var(--transition);
+            display: inline-flex;
+		}
+		.footer a:hover {
+			color: #fff;
+			transform: scale(1.1);
+		}
+
+		@media (max-width: 600px) {
+			.title {
+				font-size: 2.5rem;
+			}
+			.result-section {
+				flex-direction: column;
+			}
+			.chart-container {
+				width: 100px;
+				height: 100px;
+			}
+			.chart-info span {
+				font-size: 1.8rem;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<noscript>You need to enable JavaScript to run this app.</noscript>
+	<div id="root"></div>
+
+	<!-- 4. All React components and app logic are placed in this script tag -->
+	<script type="text/babel">
+		// Make React's functions globally available for all components
+		const { useState, useEffect, useMemo, StrictMode } = React;
+
+        // --- Start: Inline SVG Icon Components (Replaces react-icons) ---
+        const SVGIcon = ({ children, ...props }) => (
+            <svg
+                stroke="currentColor"
+                fill="currentColor"
+                strokeWidth="0"
+                viewBox="0 0 24 24"
+                height="1em"
+                width="1em"
+                xmlns="http://www.w3.org/2000/svg"
+                {...props}
+            >
+                {children}
+            </svg>
+        );
+
+        const FiPlus = (props) => (
+            <SVGIcon {...props}>
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </SVGIcon>
+        );
+
+        const FiEdit = (props) => (
+             <SVGIcon {...props}>
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </SVGIcon>
+        );
+        
+        const FaShieldAlt = (props) => (
+            <SVGIcon viewBox="0 0 512 512" {...props}>
+                <path d="M466.5 83.7l-192-80a48.15 48.15 0 00-36.9 0l-192 80C27.7 93.7 16 115.8 16 140.1V284c0 131.2 133.5 215.3 216.2 240a48.1 48.1 0 0027.6 0C362.5 499.3 496 415.2 496 284V140.1c0-24.3-11.7-46.4-29.5-56.4z"></path>
+            </SVGIcon>
+        );
+
+        const FiEdit2 = (props) => (
+            <SVGIcon {...props}>
+                 <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+            </SVGIcon>
+        );
+        
+        const FiTrash2 = (props) => (
+            <SVGIcon {...props}>
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+            </SVGIcon>
+        );
+
+        const FaTelegramPlane = (props) => (
+             <SVGIcon viewBox="0 0 496 512" {...props}>
+                <path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm121.8 169.9l-40.7 191.8c-3 13.6-11.1 16.9-22.4 10.5l-62-45.7-29.9 28.8c-3.3 3.3-6.1 6.1-12.5 6.1l4.4-63.1 114.9-103.8c5-4.4-1.1-6.9-7.7-2.5l-142.1 89.4-61.2-19c-13.3-4.2-13.6-13.3 2.8-19.7l239.1-92.2c11.1-4.2 20.8 2.7 17.2 19.3z"></path>
+            </SVGIcon>
+        );
+        // --- End: Inline SVG Icon Components ---
+
+
+		// --- Start of useLocalStorage.js ---
+		function getStorageValue(key, defaultValue) {
+			if (typeof window !== "undefined") {
+				const saved = localStorage.getItem(key);
+				const initial = saved !== null ? JSON.parse(saved) : defaultValue;
+				return initial;
+			}
+			return defaultValue;
+		}
+
+		const useLocalStorage = (key, defaultValue) => {
+			const [value, setValue] = useState(() => {
+				return getStorageValue(key, defaultValue);
+			});
+
+			useEffect(() => {
+				localStorage.setItem(key, JSON.stringify(value));
+			}, [key, value]);
+
+			return [value, setValue];
+		};
+		// --- End of useLocalStorage.js ---
+
+
+		// --- Start of DonutChart.js ---
+		function DonutChart({ percentage, status }) {
+			const [animatedPercentage, setAnimatedPercentage] = useState(0);
+
+			useEffect(() => {
+				const animation = requestAnimationFrame(() =>
+					setAnimatedPercentage(percentage)
+				);
+				return () => cancelAnimationFrame(animation);
+			}, [percentage]);
+
+			const circumference = 2 * Math.PI * 45;
+			const offset = circumference - (animatedPercentage / 100) * circumference;
+
+			return (
+				<svg className="donut-chart" viewBox="0 0 100 100">
+					<circle className="donut-chart-bg" cx="50" cy="50" r="45" />
+					<circle
+						className={`donut-chart-fg ${status}`}
+						cx="50"
+						cy="50"
+						r="45"
+						strokeDasharray={circumference}
+						strokeDashoffset={Math.max(0, offset)}
+					/>
+				</svg>
+			);
+		}
+		// --- End of DonutChart.js ---
+
+
+		// --- Start of CourseList.js ---
+		const DENIAL_PERCENTAGE_LIST = 0.25;
+		const SEMESTER_WEEKS_LIST = 17;
+
+		function CourseList({ courses, onSelect, onDelete }) {
+			return (
+				<div className="course-list-card">
+					<h2>المواد المحفوظة</h2>
+					<div className="course-list">
+						{courses.map((course) => {
+							const total = SEMESTER_WEEKS_LIST * course.lectureHours;
+							const denial = Math.floor(total * DENIAL_PERCENTAGE_LIST) + 1;
+
+							let effectiveAbsenceHours = course.absenceHours;
+							const basePercentage =
+								total > 0 ? (course.absenceHours / total) * 100 : 0;
+							if (course.isEngineering && basePercentage <= 5) {
+								effectiveAbsenceHours = Math.max(0, course.absenceHours - 2);
+							}
+
+							const percentage =
+								total > 0 ? (effectiveAbsenceHours / total) * 100 : 0;
+							const isDenied = effectiveAbsenceHours >= denial;
+
+							return (
+								<div
+									key={course.id}
+									className={`course-item ${isDenied ? "denied" : ""}`}
+								>
+									<div className="course-info">
+										<h3>{course.name}</h3>
+										<p>
+											الغياب: {course.absenceHours} / {denial - 1} ساعة
+											{course.isEngineering && " (هندسة)"}
+										</p>
+									</div>
+									<div className="course-progress">
+										<div
+											className="course-progress-bar"
+											style={{
+												width: `${Math.min(100, (percentage / 25) * 100)}%`,
+											}}
+										></div>
+									</div>
+									<div className="course-actions">
+										<button onClick={() => onSelect(course)} title="تعديل">
+											<FiEdit2 />
+										</button>
+										<button onClick={() => onDelete(course.id)} title="حذف">
+											<FiTrash2 />
+										</button>
+									</div>
+								</div>
+							);
+						})}
+					</div>
+				</div>
+			);
+		}
+		// --- End of CourseList.js ---
+
+
+		// --- Start of AbsenceCalculator.js ---
+		const SEMESTER_WEEKS_CALC = 17;
+		const DENIAL_PERCENTAGE_CALC = 0.25;
+
+		const formatHoursText = (hours) => {
+			if (hours < 0) hours = 0;
+			if (hours === 1) return "ساعة";
+			if (hours === 2) return "ساعتين";
+			if (hours >= 3 && hours <= 10) return `${hours} ساعات`;
+			return `${hours} ساعة`;
+		};
+
+		function AbsenceCalculator({ onSave, selectedCourse, onClear }) {
+			const [courseName, setCourseName] = useState("");
+			const [lectureHours, setLectureHours] = useState(3);
+			const [absenceHours, setAbsenceHours] = useState("");
+			const [isEngineering, setIsEngineering] = useState(false);
+
+			useEffect(() => {
+				if (selectedCourse) {
+					setCourseName(selectedCourse.name);
+					setLectureHours(selectedCourse.lectureHours);
+					setAbsenceHours(selectedCourse.absenceHours);
+					setIsEngineering(selectedCourse.isEngineering || false);
+				} else {
+					setCourseName("");
+					setLectureHours(3);
+					setAbsenceHours("");
+					setIsEngineering(false);
+				}
+			}, [selectedCourse]);
+
+			const result = useMemo(() => {
+				const absenceNum = parseInt(absenceHours, 10) || 0;
+				if (absenceNum < 0) return null;
+
+				const total = SEMESTER_WEEKS_CALC * lectureHours;
+				const allowed = Math.floor(total * DENIAL_PERCENTAGE_CALC);
+				const denial = allowed + 1;
+
+				const basePercentage = total > 0 ? (absenceNum / total) * 100 : 0;
+				const bonusIsActive = isEngineering && basePercentage <= 5;
+
+				let effectiveAbsenceHours = absenceNum;
+				if (bonusIsActive && absenceNum > 0) {
+					effectiveAbsenceHours = Math.max(0, absenceNum - 2);
+				}
+
+				const percentageForDisplay = basePercentage;
+				const isDenied = effectiveAbsenceHours >= denial;
+				const isWarning = effectiveAbsenceHours >= allowed && !isDenied;
+
+				let status = "safe";
+				if (isDenied) status = "danger";
+				else if (isWarning) status = "warning";
+
+				const remainingUntilDenial = denial - absenceNum;
+				let predictiveText = "";
+				if (absenceNum >= denial) {
+					predictiveText = "لقد تجاوزت الحد المسموح به للغياب.";
+				} else if (remainingUntilDenial === 1) {
+					predictiveText = "تحذير: غياب ساعة واحدة يؤدي إلى الحرمان!";
+				} else if (remainingUntilDenial > 1) {
+					predictiveText = `أنت على بعد ${formatHoursText(
+						remainingUntilDenial
+					)} من الحرمان.`;
+				} else {
+					predictiveText = "أنت في منطقة الأمان.";
+				}
+
+				let bonusTitle = "";
+				let bonusSubtitle = "";
+				if (bonusIsActive) {
+					bonusTitle = " البونص  نشط";
+					const maxHoursForBonus = Math.floor(total * 0.05);
+					const hoursUntilLoss = maxHoursForBonus + 1 - absenceNum;
+
+					if (hoursUntilLoss > 1) {
+						bonusSubtitle = `ستفقده بعد غياب ${formatHoursText(hoursUntilLoss)}.`;
+					} else {
+						bonusSubtitle = "ستفقده عند الغياب القادم!";
+					}
+				}
+
+				return {
+					total,
+					allowed,
+					denial,
+					percentage: percentageForDisplay,
+					status,
+					predictiveText,
+					bonusTitle,
+					bonusSubtitle,
+				};
+			}, [lectureHours, absenceHours, isEngineering]);
+
+			const handleSubmit = (e) => {
+				e.preventDefault();
+				if (!courseName) {
+					alert("الرجاء إدخال اسم المادة.");
+					return;
+				}
+				onSave({
+					id: selectedCourse ? selectedCourse.id : Date.now(),
+					name: courseName,
+					lectureHours,
+					absenceHours: parseInt(absenceHours, 10) || 0,
+					isEngineering,
+				});
+			};
+
+			return (
+				<form
+					className={`calculator-card ${result?.status}`}
+					onSubmit={handleSubmit}
+				>
+					<div className="card-header">
+						<h2>{selectedCourse ? "تعديل المادة" : "إضافة مادة جديدة"}</h2>
+						{selectedCourse && (
+							<button
+								type="button"
+								className="clear-button"
+								onClick={onClear}
+								title="العودة لوضع الإضافة"
+							>
+								<FiPlus />
+							</button>
+						)}
+					</div>
+
+					<div className="input-grid">
+						<div className="input-group">
+							<label>اسم المادة</label>
+							<input
+								type="text"
+								value={courseName}
+								onChange={(e) => setCourseName(e.target.value)}
+								placeholder="مثال: فيزياء 101"
+								required
+							/>
+						</div>
+						<div className="input-group">
+							<label>الساعات الأسبوعية</label>
+							<div className="select-wrapper">
+								<select
+									value={lectureHours}
+									onChange={(e) => setLectureHours(Number(e.target.value))}
+								>
+									{[...Array(12).keys()].map((n) => (
+										<option key={n + 1} value={n + 1}>
+											{formatHoursText(n + 1)}
+										</option>
+									))}
+								</select>
+							</div>
+						</div>
+						<div className="input-group">
+							<label>ساعات الغياب</label>
+							<input
+								type="number"
+								value={absenceHours}
+								onChange={(e) => setAbsenceHours(String(Number(e.target.value)))}
+								placeholder="0"
+								min="0"
+							/>
+						</div>
+					</div>
+
+					<div className="bonus-toggle-container">
+						<label className="toggle-label-wrapper">
+							<input
+								type="checkbox"
+								checked={isEngineering}
+								onChange={(e) => setIsEngineering(e.target.checked)}
+							/>
+							<span className="toggle-switch"></span>
+							<span className="toggle-text">مادة من كلية الهندسة</span>
+						</label>
+					</div>
+
+					{result && absenceHours !== "" && (
+						<div className="result-section">
+							<div className="chart-container">
+								<DonutChart percentage={result.percentage} status={result.status} />
+								<div className="chart-info">
+									<span>{Math.min(result.percentage, 100).toFixed(1)}%</span>
+									<p>نسبة الغياب</p>
+								</div>
+							</div>
+							<div className="result-details">
+								<div className="detail-item">
+									<span>الغياب المسموح</span>
+									<strong>{formatHoursText(result.allowed)}</strong>
+								</div>
+								<div className="detail-item">
+									<span>بداية الحرمان</span>
+									<strong>{formatHoursText(result.denial)}</strong>
+								</div>
+								<p className="predictive-text">{result.predictiveText}</p>
+								{result.bonusTitle && (
+									<div className="bonus-box">
+										<FaShieldAlt className="bonus-icon" />
+										<div className="bonus-text-content">
+											<p className="bonus-title">{result.bonusTitle}</p>
+											<p className="bonus-subtitle">{result.bonusSubtitle}</p>
+										</div>
+									</div>
+								)}
+							</div>
+						</div>
+					)}
+
+					<button type="submit" className="save-button">
+						{selectedCourse ? (
+							<>
+								<FiEdit /> تحديث المادة
+							</>
+						) : (
+							<>
+								<FiPlus /> إضافة المادة
+							</>
+						)}
+					</button>
+				</form>
+			);
+		}
+		// --- End of AbsenceCalculator.js ---
+
+
+		// --- Start of App.js ---
+		function App() {
+			const [courses, setCourses] = useLocalStorage("courses", []);
+			const [selectedCourse, setSelectedCourse] = useState(null);
+			const [isLoaded, setIsLoaded] = useState(false);
+
+			useEffect(() => {
+				const timer = setTimeout(() => setIsLoaded(true), 100);
+				return () => clearTimeout(timer);
+			}, []);
+
+			const handleAddOrUpdateCourse = (course) => {
+				const existingIndex = courses.findIndex((c) => c.id === course.id);
+
+				if (existingIndex > -1) {
+					const updatedCourses = [...courses];
+					updatedCourses[existingIndex] = course;
+					setCourses(updatedCourses);
+				} else {
+					setCourses([...courses, course]);
+				}
+				setSelectedCourse(null);
+			};
+
+			const handleDeleteCourse = (courseId) => {
+				setCourses(courses.filter((c) => c.id !== courseId));
+				if (selectedCourse && selectedCourse.id === courseId) {
+					setSelectedCourse(null);
+				}
+			};
+
+			const handleSelectCourse = (course) => {
+				setSelectedCourse(course);
+				window.scrollTo({ top: 0, behavior: "smooth" });
+			};
+
+			const handleClearForm = () => {
+				setSelectedCourse(null);
+			};
+
+			return (
+				<div className={`app ${!isLoaded ? "" : "loaded"}`}>
+					<div className="aurora-bg">
+						<div className="aurora-dot aurora-dot-1"></div>
+						<div className="aurora-dot aurora-dot-2"></div>
+					</div>
+
+					<div className="container">
+						<header className="header">
+							<h1 className="title">حاسبة الغياب </h1>
+							<p className="subtitle">راقب غيابك بأسلوب لم تره من قبل</p>
+						</header>
+
+						<AbsenceCalculator
+							key={selectedCourse ? selectedCourse.id : "new"}
+							onSave={handleAddOrUpdateCourse}
+							selectedCourse={selectedCourse}
+							onClear={handleClearForm}
+						/>
+
+						{courses.length > 0 && (
+							<CourseList
+								courses={courses}
+								onSelect={handleSelectCourse}
+								onDelete={handleDeleteCourse}
+							/>
+						)}
+
+						<footer className="footer">
+							<span>© 2025 | تصميم وتطوير ظلام</span>
+							<a
+								href="https://t.me/zalam_0"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<FaTelegramPlane />
+							</a>
+						</footer>
+					</div>
+				</div>
+			);
+		}
+		// --- End of App.js ---
+
+
+		// --- Final step: Render the main App component into the 'root' div ---
+		const rootElement = document.getElementById("root");
+		const root = ReactDOM.createRoot(rootElement);
+
+		root.render(
+			<StrictMode>
+				<App />
+			</StrictMode>
+		);
+	</script>
+</body>
+
+</html>
