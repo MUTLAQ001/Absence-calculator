@@ -491,7 +491,7 @@
 						/>
 						<CourseList courses={sortedCourses} onSelect={handleSelect} onDelete={handleDelete} sortOrder={sortOrder} onSortChange={setSortOrder} semesterWeeks={semesterWeeks} lastUpdatedId={lastUpdatedId} />
 						<footer className="footer">
-							<span className="footer-link">© 2025 | ظلام</span>
+							<span className="footer-link">ظلام</span>
 							<div className="footer-controls">
 								<div className="theme-picker" title="اختر السمة">{Object.keys(THEMES).map(key => <div key={key} className={`theme-dot ${theme === key ? 'active' : ''}`} style={{ backgroundColor: THEMES[key]['--color-primary'] }} onClick={() => setTheme(key)} />)}</div>
 								<a href="https://t.me/zalam_0" className="footer-link" target="_blank" rel="noopener noreferrer" title="تواصل معي على تليجرام"><Icons.Telegram /></a>
