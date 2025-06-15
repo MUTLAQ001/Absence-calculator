@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>دليل أعضاء هيئة التدريس - جامعة القصيم</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.17.0/font/bootstrap-icons.min.css"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&family=Tajawal:wght@400;500;700&display=swap");
+
+      :root {
+        --primary-color: #6195ed;
+        --primary-light: rgba(97, 149, 237, 0.3);
+        --primary-dark: #4875c8;
+        --secondary-color: #888;
+        --success-color: #00b894;
+        --danger-color: #ff5252;
+        --warning-color: #fdcb6e;
+        --info-color: #17a2b8;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+
+        --body-bg: #121214;
+        --card-bg: rgba(30, 30, 40, 0.6);
+        --input-bg: rgba(45, 45, 55, 0.8);
+        --border-color: rgba(255, 255, 255, 0.2);
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.85);
+        --text-muted: rgba(255, 255, 255, 0.65);
+        --transition-fast: 0.2s ease;
+        --transition-normal: 0.3s ease;
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+        --border-radius-sm: 0.2rem;
+        --border-radius-md: 0.25rem;
+        --border-radius-lg: 0.3rem;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        font-family: "Cairo", "Tajawal", sans-serif;
+        direction: rtl;
+        text-align: right;
+        font-size: 16px;
+        line-height: 1.7;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background-color: var(--body-bg);
+        color: var(--text-primary);
+        -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+      }
+
+      .app {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        padding: 15px;
+        background-color: var(--body-bg);
+        color: var(--text-primary);
+        transition: background var(--transition-normal),
+          color var(--transition-normal);
+        position: relative;
+      }
+
+      .app::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="rgba(255,255,255,0.03)" width="50" height="50" x="0" y="0"/><rect fill="rgba(255,255,255,0.03)" width="50" height="50" x="50" y="50"/></svg>');
+        background-size: 60px 60px;
+        opacity: 0.5;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .container {
+        position: relative;
+        z-index: 1;
+        max-width: 1200px;
+        margin: 0 auto;
+        width: 100%;
+        padding: 0 10px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .title {
+        font-size: 2rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1rem;
+        color: var(--text-primary);
+        text-shadow: 0 0 15px rgba(97, 149, 237, 0.5);
+        background: linear-gradient(to left, var(--primary-color), #ffffff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .search-box.input-group {
+        margin-bottom: 20px;
+      }
+
+      .search-box .form-control {
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        padding: 0.6rem 0.75rem;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        background-color: var(--input-bg);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .search-box .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem var(--primary-light);
+        outline: 0;
+      }
+
+      .search-box .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      .department-card.status-box {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        padding: 1rem;
+        text-align: center;
+        transition: transform var(--transition-normal),
+          box-shadow var(--transition-normal);
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 10px;
+      }
+
+      .department-card.status-box:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-light);
+      }
+
+      .department-card h5 {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+        font-size: 1.1rem;
+      }
+
+      .department-card small {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+      }
+
+      .professor-card.status-box {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        padding: 1rem;
+        margin-bottom: 10px;
+        transition: transform var(--transition-fast),
+          box-shadow var(--transition-fast);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .professor-card.status-box:hover {
+        transform: scale(1.01);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-light);
+      }
+
+      .professor-card .status-title {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .email-badge {
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: var(--border-radius-sm);
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        cursor: pointer;
+        margin-inline-start: 0.5rem;
+        transition: background-color 0.3s ease;
+        user-select: text;
+      }
+
+      .email-badge:hover {
+        background-color: var(--primary-dark);
+      }
+
+      .email-badge.copied {
+        background-color: var(--success-color);
+      }
+
+      .text-muted {
+        color: var(--secondary-color) !important;
+        font-size: 0.85rem;
+      }
+
+      #copyNotification {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        text-align: center;
+        background-color: var(--success-color);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: var(--border-radius-sm);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        z-index: 1000;
+        margin: 0 auto;
+      }
+
+      #copyNotification.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      #copyNotification.error {
+        /* Class for error notification */
+        background-color: var(--danger-color);
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 1rem;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        border-top: 1px solid var(--border-color);
+      }
+
+      @media (max-width: 768px) {
+        .title {
+          font-size: 1.8rem;
+        }
+        .header {
+          margin-bottom: 15px;
+          padding-bottom: 10px;
+        }
+        .search-box.input-group {
+          margin-bottom: 15px;
+        }
+        .department-card.status-box,
+        .professor-card.status-box {
+          padding: 0.8rem;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .title {
+          font-size: 1.6rem;
+        }
+        .app {
+          padding: 10px;
+        }
+        .container {
+          padding: 0 5px;
+        }
+      }
+
+      button:focus,
+      .form-control:focus {
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem var(--primary-light);
+        border-color: var(--primary-color);
+      }
+    </style>
+  </head>
+  <body class="app">
+    <div class="container">
+      <header class="header">
+        <h1 class="title mb-2">دليل أعضاء هيئة التدريس</h1>
+        <div class="search-box input-group">
+          <input
+            type="text"
+            class="form-control"
+            id="searchInput"
+            placeholder="ابحث باسم الدكتور أو البريد الإلكتروني..."
+          />
+        </div>
+      </header>
+
+      <main class="py-3">
+        <div class="row g-3 mb-3" id="departments">
+          <div
+            class="col-md-4 col-sm-6"
+            onclick="filterByDepartment('ME Department')"
+          >
+            <div class="department-card card text-center h-100 py-3 status-box">
+              <h5>الهندسة الميكانيكية</h5>
+              <small>38 عضو هيئة تدريس</small>
+            </div>
+          </div>
+          <div
+            class="col-md-4 col-sm-6"
+            onclick="filterByDepartment('Civil Engineering Department')"
+          >
+            <div class="department-card card text-center h-100 py-3 status-box">
+              <h5>الهندسة المدنية</h5>
+              <small>48 عضو هيئة تدريس</small>
+            </div>
+          </div>
+          <div
+            class="col-md-4 col-sm-6"
+            onclick="filterByDepartment('Electrical Engineering Department')"
+          >
+            <div class="department-card card text-center h-100 py-3 status-box">
+              <h5>الهندسة الكهربائية</h5>
+              <small>59 عضو هيئة تدريس</small>
+            </div>
+          </div>
+        </div>
+
+        <div id="professorsList" class="row"></div>
+      </main>
+
+      <footer class="footer">
+        <p>© 2024 دليل أعضاء هيئة التدريس - جامعة القصيم</p>
+      </footer>
+
+      <div id="copyNotification">تم النسخ</div>
+    </div>
+
+    <script>
+      const professors = [
+        {
+          name: "د. عبد الرحمن عامر أحمد الرميح",
+          email: "A.Alrumayh@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "أ.د. عبد الرحمن إبراهيم العطية",
+          email: "a.alateyah@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "أ.د. شمشير باشا مانقولي",
+          email: "S.MANJULA@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "أ.د. سليمان عبد العزيز اليحيى",
+          email: "su.alyahya@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "أ.د. رضوان عبدالغنى المصرى",
+          email: "ra.almasri@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "أ.د. حنفي محمد عمر محمد",
+          email: "hanafy@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "أ.د. عبد العزيز سليمان العبودي",
+          email: "alaboodi@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "أ.د. فهد عبد الرحمن المفضي",
+          email: "fmfthaie@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "أ.د. أسامه محمد عرفان احمد",
+          email: "o.ahmed@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "أ.د. محمد ساجد",
+          email: "msajd@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "أ.د. شيفا سانكاران غوفيندا سامي",
+          email: "s.udayar@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. عبدالله صالح الصويان",
+          email: "a.alsuwaiyan@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. عبدالرحيم عماد الدين عبدالرحيم",
+          email: "aahmad@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. هاني رزق عبداللطيف عمار",
+          email: "h.ammar@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. حسين زين قرني حسين",
+          email: "H.Hussein@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. محمد صالح عثمان الشتوي",
+          email: "alshitawi@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. عبد الرحمن عبدالله الربيعان",
+          email: "alrobaian@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. سعد محمد سليمان مكراس",
+          email: "mkras@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. علي سليمان الصقري",
+          email: "a.alsagri@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. عبدالله أحمد الغفيص",
+          email: "a.alghafis@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. حسن محمد عبد الحافظ أحمد",
+          email: "Hm.ahmed@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. وليد حسن الجرايحي",
+          email: "w.nasr@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. بندر عبد الله صالح العييدي",
+          email: "aloyaydi@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. أحمد محمد صالح الشويرخ",
+          email: "shoierkh@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. انس محمد الوطبان",
+          email: "a.alwatban@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. هشام عبد الغفار عثمان",
+          email: "H.Bekhit@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. عامر لافي اللافي",
+          email: "Lafy@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. فيصل صالح التويجري",
+          email: "fs.altwijri@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. إيهاب عبد الرؤوف",
+          email: "eomer@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. حسين صادق",
+          email: "H.SADIG@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. محمد النجلاوي",
+          email: "M.nejlaoui@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. محمد عقيل البدراني",
+          email: "Moa.albadrani@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. سليمان السليم",
+          email: "sm.alsaleem@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. برويز علي ناصر علي",
+          email: "P.ALI@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. اقبال احمد اخلاق احمد",
+          email: "i.ahmad@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. ياسر محمد عبد الكريم الفليح",
+          email: "yflieh@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. يوسف بن هندي العماري",
+          email: "y.alammari@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "د. صالح محمد ابراهيم الزغيبي",
+          email: "S.ALZUGHAIBI@qu.edu.sa",
+          department: "ME Department",
+        },
+        {
+          name: "أ.د إبراهيم السلامة",
+          email: "islamh@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "أ.د عبد الرحمن الخميري",
+          email: "A.ALKHOMERY@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "أ.د عبد الرزاق جهمان خوشي",
+          email: "a.muhammed@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "أ.د عماد البلتاجي",
+          email: "e.elbeltagi@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "أ.د محمد شفيق الزمان",
+          email: "m.uzzaman@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "أ.د حسنين حيدر",
+          email: "h.chaudhry@qu.edu.ds",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. ماجد العنزي",
+          email: "mfanzy@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. محمد الرشيدي",
+          email: "m.alresheedi@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. عبد الله العودة",
+          email: "aalodah@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. فواز الحربي",
+          email: "fawazalharbi@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. مشعل المشيقح",
+          email: "m.moshaogeh@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. سليم السليم",
+          email: "sa.alsaleem@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. احمد العنزي",
+          email: "aalenezi@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. فهد الشومر",
+          email: "shomr@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. وائل العطية",
+          email: "w.alattyih@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. صالح العقلاء",
+          email: "sa.alogla@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. رائد الصالحي",
+          email: "r.alsalhi@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. عمر العواد",
+          email: "omar.awwad@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. يزيد الشريدة",
+          email: "y.alsharredah@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. منصور التركي",
+          email: "m.alturki@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. ياسر التويجري",
+          email: "y.altwaijry@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. أياد السحيباني",
+          email: "e.alsuhaibani@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. محمد الخريصي",
+          email: "m.alkharisi@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. احمد الراجي",
+          email: "a.elragi@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. أرشد جمال",
+          email: "a.jamal@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. بدر السعيد",
+          email: "balsaeed@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. سعود العتيبي",
+          email: "sae.alotaibi@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. صالح العريني",
+          email: "saleh.aloraini@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. سعود المطيري",
+          email: "sa.almotiry@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. هاني داهش",
+          email: "Ha.dahish@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. منير قائد سعيد",
+          email: "m.abdo@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. عبد اللطيف المنيفي",
+          email: "a.almunifi@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. محمد الفوزان",
+          email: "malfawzan@qu.edu.sa",
+          department: "Civil Engineering Department" /* Corrected Department */,
+        },
+        {
+          name: "د. إبراهيم الفلاج",
+          email: "i.alfallaj@qu.edu.sa",
+          department: "Civil Engineering Department" /* Corrected Department */,
+        },
+        {
+          name: "د. احمد العتيق",
+          email: "aa.alateeq@qu.edu.sa",
+          department: "Civil Engineering Department" /* Corrected Department */,
+        },
+        {
+          name: "د. عبد العزيز المرشد",
+          email: "am.almarshad@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. احمد المطيري",
+          email: "ah.almutairi@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. انس الدواس",
+          email: "A.Aldawwas@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. نعیم احمد",
+          email: "N.Naeem@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. احمد حسين بريمة محمد",
+          email: "ah.mohammed@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. رجب السيد",
+          email: "r.elsayed@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. مدثر المكي",
+          email: "m.almakki@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. عبد الله الناصر",
+          email: "26647@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "م. عبد الله العريني",
+          email: "ab.aloraini@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "م. عبد الرحمن الفريح",
+          email: "a.alfuraih2@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "م. ماجد الرشودي",
+          email: "Ma.Alreshoodi@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "م. معاذ الحميدي",
+          email: "M.Alhumaidi@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "م. عبد الملك الحسون",
+          email: "a.alhassoon@qu.edu.sa",
+          department: "Civil Engineering Department",
+        },
+        {
+          name: "د. الأمجد حجلاوي",
+          email: "e.hajlaoui@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. الهادي القاسمي",
+          email: "h.guesmi@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "أ.د أحمد علاء",
+          email: "a.mahfouz@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. إبراهيم السعيدان",
+          email: "i.alsaidan@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. إبراهيم العتيبي",
+          email: "i.alotaibi@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. أحمد الزغيبي",
+          email: "AH.ALZUGHAIBI@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. أحمد عيد",
+          email: "a.mohamad@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. أنور يعقوب",
+          email: "An.yagoob@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "م. باسم الهميلي",
+          email: "b.alhumaily@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "م. بدر اللحيده",
+          email: "balluhaidah@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. حماد اقبال",
+          email: "H.Sherazi@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. حمد الحركان",
+          email: "h.alharkan@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. خالد الحسون",
+          email: "K.HASSOON@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. خالد الدبيخي",
+          email: "k.aldubaikhy@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "م. خالد الكبير",
+          email: "k.alkobayer@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "أ.د رضوان أكرم",
+          email: "R.Akram@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. زياد المحيميد",
+          email: "z.mohaimeed@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. سليمان المحيميد",
+          email: "Sulaiman.M@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. سيد إيجاز" /* Corrected Name */,
+          email: "s.kirmani@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. سيد عثمان مدبولي",
+          email: "so.ossman@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. شعبان محمود",
+          email: "S.MAHMOUD@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. طلال الحربي",
+          email: "atalal@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "أ.د عبد الرحمن المرشود",
+          email: "dr_almarshoud@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. عبدالاله الحربي",
+          email: "ALY.Alharbi@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. عبد الحكيم السليم",
+          email: "A.ABDULHAKEEM@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. عبد الرحمن التركي",
+          email: "astrky@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. عبد الرحمن الدريبي",
+          email: "ab.alduraibi@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. عبد الرحمن الصفراني",
+          email: "A.ALSAFRANI@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. عبد العزيز الحوشاني",
+          email: "ahoshany@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. عبد العزيز العرف",
+          email: "aaalorf@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. عبدالله البريدي",
+          email: "a.alburidy@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. عبدالله الفهيد",
+          email: "Abd.Alfehaid@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. عبد الله القصير",
+          email: "amksaier@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. عبدالله المحيميد",
+          email: "a.mohaimeed@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. عبدالمصور قريشي",
+          email: "A.QURAISHI@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. علي مرتضى",
+          email: "a.murtaza@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. عمر الرميح",
+          email: "O.ALRUMAYH@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "م. عاصم عزيز" /* Corrected Name */,
+          email: "A.Abdulaziz@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "م. عبد الكريم العرف",
+          email: "a.alorf@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "م. عبد الله العبد العالي",
+          email: "abdalaalie@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "م. علي العواد",
+          email: "al.alawad@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. فهد السليم",
+          email: "F.ALSALEEM@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. فهد الصنيدح",
+          email: "f.alsunaudih@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "أ.د محمد عبد الحليم",
+          email: "nsar@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. محمد إسلام" /* Corrected Name */,
+          email: "muha.khan@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. محمد الفايزي",
+          email: "M.Alfayizi@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. محمد المنيع",
+          email: "mmanee@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. محمد النصار",
+          email: "msnsaar@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. مساعد الرشيدي",
+          email: "malrashidi@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. مسعود الرشيدي",
+          email: "mo.alrashidi@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. مهند العرج",
+          email: "muhannad@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "م. محمد العدوان",
+          email: "M.AlAdwan@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "م. محمد الدوسري",
+          email: "M.AlDawsari@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "م. محمد الراجحي",
+          email: "ms.alrajhi@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "م. محمد كاشف",
+          email: "Mu.Masood@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. نبيل الصعب",
+          email: "n.alsaab@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "د. نواف القويفلي",
+          email: "Nkoiefly@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "أ.د صوبيا بايغ",
+          email: "s.afzalbaig@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+        {
+          name: "أ.د حفصة محمود",
+          email: "h.shahid@qu.edu.sa",
+          department: "Electrical Engineering Department",
+        },
+      ];
+
+      function searchProfessors() {
+        const searchTerm = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        const filtered = professors.filter(
+          (prof) =>
+            prof.name.toLowerCase().includes(searchTerm) ||
+            prof.email.toLowerCase().includes(searchTerm)
+        );
+        displayProfessors(filtered);
+      }
+
+      function filterByDepartment(dept) {
+        const filtered = professors.filter((prof) => prof.department === dept);
+        displayProfessors(filtered);
+      }
+
+      function copyToClipboard(email, badgeElement) {
+        navigator.clipboard
+          .writeText(email)
+          .then(() => {
+            badgeElement.classList.add("copied");
+            showNotification();
+            setTimeout(() => {
+              badgeElement.classList.remove("copied");
+            }, 1500);
+          })
+          .catch((err) => {
+            console.error("فشل نسخ البريد الإلكتروني: ", err);
+            showNotification("فشل نسخ البريد الإلكتروني", true);
+          });
+      }
+
+      function displayProfessors(professorsList) {
+        const container = document.getElementById("professorsList");
+        container.innerHTML = "";
+
+        if (professorsList.length === 0) {
+          container.innerHTML =
+            '<div class="col-12 text-center"><p>لا يوجد نتائج بحث.</p></div>';
+          return;
+        }
+
+        professorsList.forEach((prof) => {
+          container.innerHTML += `
+                    <div class="col-md-4 col-sm-6">
+                        <div class="professor-card status-box">
+                            <h6 class="status-title mb-2">${prof.name}</h6>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge email-badge" role="button" tabindex="0" ontouchend="copyToClipboard('${prof.email}', this)" onclick="copyToClipboard('${prof.email}', this)">${prof.email}</span>
+                                <small class="text-muted">${prof.department}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        });
+      }
+
+      let notificationTimeout;
+      function showNotification(message = "تم النسخ", isError = false) {
+        const notification = document.getElementById("copyNotification");
+        notification.textContent = message;
+        notification.className = isError ? "show error" : "show";
+
+        clearTimeout(notificationTimeout);
+        notificationTimeout = setTimeout(() => {
+          notification.classList.remove("show");
+          notification.classList.remove("error"); // Ensure error class is also removed
+        }, 3000);
+      }
+
+      document
+        .getElementById("searchInput")
+        .addEventListener("input", searchProfessors);
+      window.onload = () => displayProfessors(professors);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
