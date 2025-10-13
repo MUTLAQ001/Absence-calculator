@@ -59,7 +59,7 @@
 		
         .cosmic-bg-container{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-2;overflow:hidden}
 		#starfield-canvas{position:absolute;top:0;left:0;width:100%;height:100%}
-		.nebula-glow{position:absolute;top:50%;left:50%;width:80vmax;height:80vmax;margin-top:-40vmax;margin-left:-40vmax;background:radial-gradient(circle,hsl(var(--primary-hue),90%,60%,.15) 0%,hsl(var(--secondary-hue),80%,50%,.1) 40%,transparent 70%);filter:blur(100px);border-radius:50%;animation:move-nebula 90s infinite alternate ease-in-out;transition:opacity .5s ease,background .5s ease}
+		.nebula-glow{position:absolute;top:50%;left:50%;width:90vmax;height:90vmax;margin-top:-45vmax;margin-left:-45vmax;background:radial-gradient(circle,hsl(var(--primary-hue),90%,60%,.15) 0%,hsl(var(--secondary-hue),80%,50%,.1) 40%,transparent 70%);filter:blur(100px);border-radius:50%;animation:move-nebula 90s infinite alternate ease-in-out;transition:opacity .5s ease,background .5s ease}
 		.light-mode .nebula-glow{opacity:.5;filter:blur(120px)}
 		
         .app{min-height:100vh;position:relative;padding:2rem 1rem;}
@@ -747,6 +747,7 @@
 			MIN_WEEKS: 7, 
 			MAX_WEEKS: 20,
 			RECOMMENDED_WEEKS: 17,
+            OFFICIAL_WEEKS: 18,
 			RECOMMENDED_SEMESTER_NAME: "471"
 		};
 		const PRESET_THEMES = {
@@ -839,14 +840,22 @@
 			return h;
 		};
 
+		// -->> تم تحديث هذه الدالة لتقبل الأرقام العشرية <<--
 		const formatRemainingHoursText = (hours) => {
 			if (hours <= 0) return "0 ساعات";
-			const roundedHours = Math.round(hours);
-			if (roundedHours === 1) return "ساعة واحدة";
-			if (roundedHours === 2) return "ساعتين";
-			if (roundedHours >= 3 && roundedHours <= 10) return `${roundedHours} ساعات`;
-			return `${roundedHours} ساعة`;
+
+			if (Number.isInteger(hours)) {
+				const intHours = hours;
+				if (intHours === 1) return "ساعة واحدة";
+				if (intHours === 2) return "ساعتين";
+				if (intHours >= 3 && intHours <= 10) return `${intHours} ساعات`;
+				return `${intHours} ساعة`;
+			}
+
+			const formattedHours = parseFloat(hours.toFixed(2));
+			return `${formattedHours} ساعة`;
 		};
+
 		
 		const formatLectureHoursText = (hours) => {
 			const roundedHours = Math.round(hours);
@@ -1083,7 +1092,7 @@
 			const { name, lectureHours, absenceHours } = courseData;
 
 			const result = useMemo(() => {
-				const absenceNum = parseInt(absenceHours, 10) || 0;
+				const absenceNum = Number(absenceHours) || 0; // Use Number() to handle floats
 				const total = semesterWeeks * lectureHours;
 				const allowed = Math.floor(total * CONSTANTS.DENIAL_PERCENTAGE);
 				const denial = allowed + 1;
@@ -1122,7 +1131,7 @@
 				onSave({
 					...courseData,
 					name: courseName,
-					absenceHours: parseInt(absenceHours, 10) || 0,
+					absenceHours: Number(absenceHours) || 0,
 				});
 
                 if (name && name !== 'حساب سريع') {
@@ -1131,7 +1140,7 @@
 			};
 
 			const changeAbsence = (change) => {
-				const currentAbsence = parseInt(absenceHours, 10) || 0;
+				const currentAbsence = Number(absenceHours) || 0;
 				onCourseDataChange({ absenceHours: String(Math.max(0, currentAbsence + change)) });
 			};
 			
@@ -1322,7 +1331,8 @@
 							<label>ساعات الغياب الحالية</label>
 							<div className="absence-control">
 								<button type="button" onClick={() => changeAbsence(1)}><Icons.ChevronRight /></button>
-								<input type="number" value={absenceHours} onChange={e => onCourseDataChange({ absenceHours: e.target.value })} placeholder="0" min="0" />
+								{/* -->> تم إضافة step="0.25" هنا <<-- */}
+								<input type="number" value={absenceHours} step="0.25" onChange={e => onCourseDataChange({ absenceHours: e.target.value })} placeholder="0" min="0" />
 								<button type="button" onClick={() => changeAbsence(-1)}><Icons.ChevronLeft /></button>
 							</div>
 						</div>
@@ -1439,7 +1449,8 @@
 				const courseToSave = {
 					...courseDataFromForm,
 					id: courseDataFromForm.id || Date.now(),
-					lastUpdated: Date.now()
+					lastUpdated: Date.now(),
+					absenceHours: Number(courseDataFromForm.absenceHours) || 0 // Use Number() to save float
 				};
 
 				if (index > -1) { 
@@ -1626,7 +1637,12 @@
 											<Icons.CheckCircle />
 											<span>هذا هو العدد المتوقع لترم {CONSTANTS.RECOMMENDED_SEMESTER_NAME}</span>
 										</div>
-									) : (
+									) : semesterWeeks === CONSTANTS.OFFICIAL_WEEKS ? (
+										<div className="recommendation-message correct">
+											<Icons.CheckCircle />
+											<span>هذا هو العدد المعتمد بالموقع الخاص بالجامعة</span>
+										</div>
+                                    ) : (
 										<div className="recommendation-message warning">
 											<Icons.WarningCircle />
 											<span>العدد الموصى به هو {CONSTANTS.RECOMMENDED_WEEKS} أسابيع.</span>
@@ -1694,65 +1710,58 @@
 	</script>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-
+        // -->> تم تحديث هذا السكربت بالكامل لخلفية أجمل وثابتة <<--
         const initCosmicEffects = () => {
             const canvas = document.getElementById('starfield-canvas'); if (!canvas) return;
             const ctx = canvas.getContext('2d');
-            let stars = [], shootingStars = [], scrollSpeed = 0, lastScrollY = window.scrollY;
-            let mouseX = 0, mouseY = 0;
+            let layers = [], shootingStars = [];
 
             function resizeCanvas() { 
                 canvas.width = window.innerWidth; 
                 canvas.height = window.innerHeight; 
             }
-
-            window.addEventListener('mousemove', e => {
-                mouseX = e.clientX - canvas.width / 2;
-                mouseY = e.clientY - canvas.height / 2;
-            });
             
             class Star { 
-                constructor() {
-                    this.depth = Math.random() * 0.9 + 0.1;
+                constructor(layerConfig) {
+                    this.config = layerConfig;
                     this.reset();
-                    this.pulsate = Math.random() > 0.98;
-                    this.alpha = 0;
-                    this.alphaChange = (Math.random() * 0.02) + 0.005;
-					this.vx = (Math.random() - 0.5) * 0.1 * this.depth;
-                    this.vy = (Math.random() - 0.5) * 0.1 * this.depth;
                 }
                 reset() {
                     this.x = Math.random() * canvas.width;
                     this.y = Math.random() * canvas.height;
-                    this.radius = (Math.random() * 1.2 + 0.3) * this.depth;
-                    this.maxAlpha = (Math.random() * 0.5 + 0.3) * this.depth;
+                    this.radius = Math.random() * this.config.maxSize + this.config.minSize;
+                    this.alpha = 0;
+                    this.alphaChange = Math.random() * 0.02 + 0.005;
+					this.maxAlpha = Math.random() * 0.7 + 0.1;
+                    this.vx = (Math.random() - 0.5) * this.config.speed;
+                    this.vy = (Math.random() - 0.5) * this.config.speed;
                 }
                 draw() {
-                    const parallaxX = (mouseX / (canvas.width / 2)) * -25 * this.depth;
-                    const parallaxY = (mouseY / (canvas.height / 2)) * -25 * this.depth;
-
-                    if (this.pulsate) { 
-                        this.alpha += this.alphaChange; 
+                    // Twinkling effect
+                    if (Math.random() > 0.99) {
+                         this.alpha += this.alphaChange; 
                         if (this.alpha >= this.maxAlpha || this.alpha <= 0) this.alphaChange *= -1; 
-                    } else { 
-                        this.alpha = this.maxAlpha; 
+                    } else {
+                         if (this.alpha < this.maxAlpha) this.alpha += 0.01;
                     }
+
                     ctx.globalAlpha = this.alpha;
                     ctx.beginPath();
-                    ctx.arc(this.x + parallaxX, this.y + parallaxY, this.radius, 0, Math.PI * 2);
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                     ctx.fillStyle = `hsl(220, 80%, 95%)`;
                     ctx.fill();
                     ctx.globalAlpha = 1;
                 }
                 update() {
-                    this.y += (scrollSpeed * this.depth) + this.vy; 
-					this.x += this.vx;
+                    this.x += this.vx;
+                    this.y += this.vy; 
 
+                    // Boundary checks for wrapping
 					if (this.x > canvas.width + this.radius) this.x = -this.radius;
 					if (this.x < -this.radius) this.x = canvas.width + this.radius;
                     if (this.y > canvas.height + this.radius) this.y = -this.radius;
                     if (this.y < -this.radius) this.y = canvas.height + this.radius;
-
+                    
                     this.draw();
                 }
             }
@@ -1760,27 +1769,35 @@
             class ShootingStar { constructor() { this.reset(); } reset() { this.x = Math.random() * canvas.width; this.y = 0; this.len = Math.random() * 80 + 10; this.speed = Math.random() * 10 + 6; this.size = Math.random() * 1 + 0.1; this.waitTime = new Date().getTime() + Math.random() * 3000 + 500; this.active = false; } update() { if (this.active) { this.x -= this.speed; this.y += this.speed; if (this.x < 0 || this.y >= canvas.height) this.reset(); } else if (this.waitTime < new Date().getTime()) this.active = true; } draw() { if (this.active) { ctx.strokeStyle = `hsla(220, 100%, 80%, ${Math.random() * 0.5 + 0.5})`; ctx.lineWidth = this.size; ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.x + this.len, this.y - this.len); ctx.stroke(); } } }
             
             function initStars() { 
-                stars = []; 
-                shootingStars = []; 
-                const starCount = Math.floor(canvas.width * canvas.height / 8000); 
-                for (let i = 0; i < starCount; i++) { stars.push(new Star()); } 
+                layers = [];
+                shootingStars = [];
+                const layerConfigs = [
+                    { speed: 0.05, maxSize: 0.8, minSize: 0.2, count: Math.floor(canvas.width / 8) }, // Far, slow, tiny stars
+                    { speed: 0.1, maxSize: 1.2, minSize: 0.3, count: Math.floor(canvas.width / 15) }, // Mid, medium stars
+                    { speed: 0.15, maxSize: 1.5, minSize: 0.5, count: Math.floor(canvas.width / 35) } // Near, larger stars
+                ];
+
+                layerConfigs.forEach(config => {
+                    let stars = [];
+                    for(let i=0; i<config.count; i++) {
+                        stars.push(new Star(config));
+                    }
+                    layers.push(stars);
+                });
+
                 for (let i = 0; i < 3; i++) { shootingStars.push(new ShootingStar()); } 
             }
 
             function animate() { 
                 requestAnimationFrame(animate); 
-                ctx.clearRect(0, 0, canvas.width, canvas.height); 
-                stars.forEach(s => s.update()); 
-                shootingStars.forEach(s => { s.update(); s.draw(); }); 
-                scrollSpeed *= 0.9; 
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                layers.forEach(starLayer => {
+                    starLayer.forEach(star => star.update());
+                });
+                shootingStars.forEach(s => { s.update(); s.draw(); });
             }
 
-            window.addEventListener('scroll', () => { 
-                const delta = window.scrollY - lastScrollY; 
-                scrollSpeed += delta * 0.03;
-                lastScrollY = window.scrollY; 
-            });
-
+            // Remove scroll listener completely to make background static relative to scroll.
             window.addEventListener('resize', () => { 
                 resizeCanvas(); 
                 initStars(); 
