@@ -1395,6 +1395,39 @@
 				const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 				if (themeColorMeta) { themeColorMeta.setAttribute('content', colorMode === 'light' ? '#f9f9f9' : '#0a0a0a'); }
 			}, [colorMode]);
+
+            useEffect(() => {
+                const hasSeenWarning = localStorage.getItem('absence_warning_seen_v2');
+                if (!hasSeenWarning) {
+                    Swal.fire({
+                        title: 'تنبيه هام',
+                        html: `
+                            <div style="text-align: right; line-height: 1.8;">
+                                <p style="margin-bottom: 1rem;">نود لفت انتباهك إلى أن نسب الغياب <strong>غير ثابتة</strong> في الوقت الحالي.</p>
+                                <p>لذا نوصي بالتحقق والاعتماد بشكل مستمر على تطبيق 
+                                    <a href="https://t.me/Qassim_QU/137" target="_blank" rel="noopener noreferrer" 
+                                       style="color: #00c853; font-weight: 700; text-decoration: none; border-bottom: 1px dashed #00c853; transition: all 0.2s;">
+                                       My QU
+                                    </a>
+                                .</p>
+                            </div>
+                        `,
+                        icon: 'info',
+                        confirmButtonText: 'حسناً، فهمت',
+                        confirmButtonColor: 'var(--color-primary)',
+                        background: 'var(--color-card)',
+                        color: 'var(--color-text)',
+                        customClass: {
+                            popup: 'swal-popup-animation-in',
+                        },
+                        showClass: { popup: '' },
+                        hideClass: { popup: 'swal-popup-animation-out' },
+                        backdrop: `rgba(0,0,0,0.6)`
+                    }).then(() => {
+                        localStorage.setItem('absence_warning_seen_v2', 'true');
+                    });
+                }
+            }, []);
 			
 			useEffect(() => {
 				const handler = e => { e.preventDefault(); setInstallPrompt(e); };
