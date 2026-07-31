@@ -304,6 +304,17 @@
 		.quick-add-btn.minus:hover{background-color:rgba(var(--rgb-danger),0.15);border-color:var(--color-danger-red);color:var(--color-danger-red)}
 
 		.absence-control.excused input:focus{box-shadow:none !important}
+		.excused-toggle-row{grid-column:1/-1;display:flex;justify-content:center;margin-top:.25rem;}
+		.excused-toggle-btn{display:inline-flex;align-items:center;gap:.6rem;background:rgba(var(--rgb-primary),0.08);border:1px solid var(--color-border);border-radius:var(--radius-full);padding:.7rem 1.4rem;color:var(--color-text-muted);font-family:var(--font-body);font-size:.9rem;font-weight:600;cursor:pointer;transition:background-color var(--transition),border-color var(--transition),color var(--transition),transform var(--transition);}
+		.excused-toggle-btn svg{width:1.1em;height:1.1em;}
+		.excused-toggle-btn:hover{background:rgba(var(--rgb-primary),0.16);border-color:var(--color-primary);color:var(--color-primary);transform:translateY(-2px);}
+		.excused-toggle-btn:active{transform:translateY(0) scale(.97);}
+		.input-group.excused-reveal{margin-top:1.5rem;}
+		.excused-reveal{animation:fadeInUp .4s cubic-bezier(0.25,0.8,0.25,1);}
+		.label-icon-actions{display:flex;align-items:center;gap:.6rem;}
+		.excused-remove-btn{background:none;border:none;color:var(--color-text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transform:rotate(45deg);transition:color var(--transition),transform var(--transition);}
+		.excused-remove-btn svg{width:1.1em;height:1.1em;}
+		.excused-remove-btn:hover{color:var(--color-danger-red);transform:rotate(45deg) scale(1.15);}
 
 		.backup-buttons{display:flex;gap:.75rem;width:100%}
 		.backup-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.7rem 1rem;font-family:var(--font-body);font-size:.95rem;font-weight:600;color:var(--color-primary);background:rgba(var(--rgb-primary),0.08);border:1px solid rgba(var(--rgb-primary),0.25);border-radius:var(--radius-full);cursor:pointer;transition:all var(--transition)}
@@ -1167,6 +1178,7 @@
 
 		function AbsenceCalculator({ onSave, isEditing, onClear, courseData, onCourseDataChange, courses, semesterWeeks }) {
 			const { name, lectureHours, absenceHours, excusedHours = "" } = courseData;
+			const [showExcused, setShowExcused] = useState(() => (Number(excusedHours) || 0) > 0);
 
 			const result = useMemo(() => {
 				const absenceNum = Number(absenceHours) || 0;
@@ -1229,6 +1241,13 @@
 			const changeExcused = (change) => {
 				const currentExcused = Number(excusedHours) || 0;
 				onCourseDataChange({ excusedHours: String(Math.max(0, currentExcused + change)) });
+			};
+
+			const revealExcused = () => setShowExcused(true);
+
+			const hideExcused = () => {
+				setShowExcused(false);
+				onCourseDataChange({ excusedHours: "" });
 			};
 			
 			const showExplanation = () => {
@@ -1623,21 +1642,34 @@
 								<button type="button" onClick={() => changeAbsence(-1)}><Icons.ChevronLeft /></button>
 							</div>
 						</div>
-						<div className="input-group">
+						{!showExcused && (
+							<div className="excused-toggle-row">
+								<button type="button" className="excused-toggle-btn" onClick={revealExcused}>
+									<Icons.ShieldCheck />
+									<span>إضافة غياب بعذر</span>
+								</button>
+							</div>
+						)}
+					</div>
+					{showExcused && (
+						<div className="input-group excused-reveal">
 							<div className="label-with-icon-container">
 								<label>ساعات الغياب بعذر (اختياري)</label>
-								<div className="info-tooltip-wrapper">
-									<Icons.ShieldCheck />
-									<span className="info-tooltip">الغياب بعذر مقبول له حد منفصل: 25% من ساعات المقرر، تمامًا مثل الغياب بدون عذر. تجاوز أي منهما يؤدي للحرمان.</span>
+								<div className="label-icon-actions">
+									<div className="info-tooltip-wrapper">
+										<Icons.ShieldCheck />
+										<span className="info-tooltip">الغياب بعذر مقبول له حد منفصل: 25% من ساعات المقرر، تمامًا مثل الغياب بدون عذر. تجاوز أي منهما يؤدي للحرمان.</span>
+									</div>
+									<button type="button" className="excused-remove-btn" onClick={hideExcused} title="إزالة الغياب بعذر"><Icons.Plus /></button>
 								</div>
 							</div>
 							<div className="absence-control excused">
 								<button type="button" onClick={() => changeExcused(1)}><Icons.ChevronRight /></button>
-								<input type="number" value={excusedHours} step="0.25" onChange={e => onCourseDataChange({ excusedHours: e.target.value })} placeholder="0" min="0" />
+								<input type="number" value={excusedHours} step="0.25" onChange={e => onCourseDataChange({ excusedHours: e.target.value })} placeholder="0" min="0" autoFocus />
 								<button type="button" onClick={() => changeExcused(-1)}><Icons.ChevronLeft /></button>
 							</div>
 						</div>
-					</div>
+					)}
 					
 					{result && (courseData.absenceHours !== "" || courseData.excusedHours !== "" || isEditing) && (<>
 						<div className="divider"></div>
