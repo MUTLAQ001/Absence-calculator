@@ -279,8 +279,7 @@
 		.course-progress{width: 100%; height:8px; background:rgba(255,255,255,0.08);border-radius:4px;transition:background-color var(--transition-smooth);overflow:hidden;}
 		.course-progress-bar{height:100%;background:var(--status-color,var(--color-primary));transition:width var(--transition-smooth),background-color var(--transition-smooth)}
 
-		.course-meta{width: 100%; font-size:.8rem;color:var(--color-text-muted);display:flex;justify-content:space-between;align-items:center}
-		.meta-info{display:flex;align-items:center;gap:0.75rem}
+		.course-meta{width: 100%; font-size:.8rem;color:var(--color-text-muted);display:flex;justify-content:flex-end;align-items:center}
 		.quick-add-controls { display: flex; gap: 0.5rem; }
 		.quick-add-btn { background-color: rgba(255, 255, 255, 0.05); border: 1px solid var(--color-border); color: var(--color-text-muted); font-size: 0.8rem; font-weight: bold; cursor: pointer; border-radius: 6px; padding: 0.2rem 0.6rem; transition: all var(--transition); user-select: none; }
 		.quick-add-btn:hover { background-color: rgba(var(--rgb-primary), 0.2); border-color: var(--color-primary); color: var(--color-primary); transform: scale(1.05); }
@@ -598,6 +597,11 @@
         .settings-item h4 { font-family: var(--font-body); font-weight: 600; font-size: 1rem; color: var(--color-text); transition: color var(--transition-smooth); margin: 0; }
 		.settings-item p { font-size: 0.8rem; color: var(--color-text-muted); margin: 0; line-height: 1.5; flex-grow: 1; }
 
+		.percent-custom-row{display:flex;align-items:center;gap:.5rem;width:100%;}
+		.percent-custom-input{width:100%;padding:.9rem 1.2rem;font-family:var(--font-body);font-size:1rem;color:var(--color-text);background:rgba(0,0,0,0.3);border:1px solid var(--color-border);border-radius:var(--radius-full);text-align:center;outline:none;transition:all var(--transition);}
+		.percent-custom-input:focus{border-color:var(--color-primary);}
+		.percent-custom-sign{font-family:var(--font-title);font-weight:700;font-size:1.05rem;color:var(--color-primary);}
+		.light-mode .percent-custom-input{background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08);}
 		.theme-picker{display:flex;gap:.5rem;align-items:center; flex-shrink: 0;}
 		.theme-dot{width:24px;height:24px;border-radius:50%;cursor:pointer;transition:transform .2s ease, border-color .2s ease;border:2px solid transparent}
 		.theme-dot:hover{transform:scale(1.2)}
@@ -626,6 +630,8 @@
 			border: 1px solid transparent;
 			box-shadow: 0 4px 15px -5px rgba(var(--rgb-status), 0.2);
 		}
+		.recommendation-message.compact { font-size: 0.78rem; padding: 0.65rem 0.9rem; gap: 0.5rem; white-space: nowrap; }
+		.recommendation-message.compact svg { flex-shrink: 0; }
 		.recommendation-message.correct {
 			--rgb-status: var(--rgb-primary);
 			background: rgba(var(--rgb-primary), 0.1);
@@ -786,7 +792,10 @@
 		};
 
         const CONSTANTS = { 
-			DENIAL_PERCENTAGE: 0.25, 
+			DEFAULT_DENIAL_PERCENT: 25,
+			DENIAL_PRESETS: [25, 20],
+			MIN_DENIAL_PERCENT: 1,
+			MAX_DENIAL_PERCENT: 100,
 			MIN_WEEKS: 7, 
 			MAX_WEEKS: 20,
 			RECOMMENDED_WEEKS: 8, 
@@ -931,24 +940,11 @@
 			return formatArabicPlural(number, { singular: 'ساعة', dual: 'ساعتين', paucal: 'ساعات', plural: 'ساعة' });
 		}
 
-		function formatRelativeTime(timestamp) {
-			const now = new Date(), past = new Date(timestamp), diff = (now - past) / 1000;
-			if (diff < 10) return 'الآن';
-			if (diff < 60) return `قبل ${formatArabicPlural(Math.round(diff), { singular: 'ثانية', dual: 'ثانيتين', paucal: 'ثوانٍ', plural: 'ثانية' })}`;
-			const mins = Math.round(diff / 60);
-			if (mins < 60) return `قبل ${formatArabicPlural(mins, { singular: 'دقيقة', dual: 'دقيقتين', paucal: 'دقائق', plural: 'دقيقة' })}`;
-			const hours = Math.round(diff / 3600);
-			if (hours < 24) return `قبل ${formatArabicPlural(hours, { singular: 'ساعة', dual: 'ساعتين', paucal: 'ساعات', plural: 'ساعة' })}`;
-			const days = Math.round(diff / 86400);
-			if (days === 1) return "بالأمس";
-			return `قبل ${formatArabicPlural(days, { singular: 'يوم', dual: 'يومين', paucal: 'أيام', plural: 'يومًا' })}`;
-		}
-
-		function getCourseStatus(course, semesterWeeks) {
+		function getCourseStatus(course, semesterWeeks, denialPercent = CONSTANTS.DEFAULT_DENIAL_PERCENT) {
 			const absenceNum = Number(course.absenceHours) || 0;
 			const excusedNum = Number(course.excusedHours) || 0;
             const total = semesterWeeks * course.lectureHours;
-            const allowed = Math.floor(total * CONSTANTS.DENIAL_PERCENTAGE);
+            const allowed = Math.floor(total * denialPercent / 100);
             const denial = allowed + 1;
             const remaining = denial - absenceNum;
             const excusedRemaining = denial - excusedNum;
@@ -1028,12 +1024,12 @@
 			);
 		};
 
-		const CourseItem = ({ course, onSelect, onDelete, onQuickAdd, style, semesterWeeks, lastUpdatedId }) => {
+		const CourseItem = ({ course, onSelect, onDelete, onQuickAdd, style, semesterWeeks, denialPercent, lastUpdatedId }) => {
 			const [isUpdated, setIsUpdated] = useState(false);
 			useEffect(() => { if (lastUpdatedId === course.id) { setIsUpdated(true); const timer = setTimeout(() => setIsUpdated(false), 1500); return () => clearTimeout(timer); } }, [lastUpdatedId, course.id]);
 			
-			const { name: status, remaining } = getCourseStatus(course, semesterWeeks);
-			const denial = Math.floor((semesterWeeks * course.lectureHours) * CONSTANTS.DENIAL_PERCENTAGE) + 1;
+			const { name: status, remaining } = getCourseStatus(course, semesterWeeks, denialPercent);
+			const denial = Math.floor((semesterWeeks * course.lectureHours) * denialPercent / 100) + 1;
 			const totalHours = semesterWeeks * course.lectureHours;
 			const absencePct = totalHours > 0 ? Math.min(100, Math.round((Number(course.absenceHours) / totalHours) * 100)) : 0;
 			const excusedNum = Number(course.excusedHours) || 0;
@@ -1054,9 +1050,6 @@
 						<div className="course-progress-bar" style={{ width: `${Math.min(100, (Number(course.absenceHours) / denial) * 100)}%` }}></div>
 					</div>
 					<div className="course-meta">
-						<div className="meta-info">
-							<span>{formatRelativeTime(course.lastUpdated)}</span>
-						</div>
 						<div className="quick-add-controls">
 							<button className="quick-add-btn minus" onClick={() => onQuickAdd(course.id, -1)} title="تراجع عن ساعة">-1</button>
 							<button className="quick-add-btn" onClick={() => onQuickAdd(course.id, 1)}>+1</button>
@@ -1068,17 +1061,17 @@
 			);
 		};
 
-		function CourseList({ courses, onSelect, onDelete, onQuickAdd, sortOrder, onSortChange, semesterWeeks, lastUpdatedId }) {
+		function CourseList({ courses, onSelect, onDelete, onQuickAdd, sortOrder, onSortChange, semesterWeeks, denialPercent, lastUpdatedId }) {
 			const summary = useMemo(() => {
 				const counts = { safe: 0, warning: 0, danger: 0 };
-				courses.forEach(c => { counts[getCourseStatus(c, semesterWeeks).name]++; });
+				courses.forEach(c => { counts[getCourseStatus(c, semesterWeeks, denialPercent).name]++; });
 				return counts;
-			}, [courses, semesterWeeks]);
+			}, [courses, semesterWeeks, denialPercent]);
 
 			const handleCopySummary = () => {
 				const statusEmoji = { safe: '🟢', warning: '🟡', danger: '🔴' };
 				const lines = courses.map(c => {
-					const s = getCourseStatus(c, semesterWeeks);
+					const s = getCourseStatus(c, semesterWeeks, denialPercent);
 					const excusedNum = Number(c.excusedHours) || 0;
 					const excusedPart = excusedNum > 0 ? ` | بعذر: ${excusedNum}` : '';
 					const statePart = s.isDenied ? 'محروم ⛔' : `المتبقي للحرمان: ${formatRemainingHoursText(s.remaining)}`;
@@ -1124,7 +1117,7 @@
 							<h3>قائمتك فارغة</h3>
 							<p>ابدأ بإضافة مقرر جديد من الأعلى لتتبع غيابك.</p>
 						</div> : 
-						<div className="course-list">{courses.map((course, index) => <CourseItem key={course.id} course={course} onSelect={onSelect} onDelete={onDelete} onQuickAdd={onQuickAdd} semesterWeeks={semesterWeeks} lastUpdatedId={lastUpdatedId} style={{ animationDelay: `${index * 100}ms` }} />)}</div>
+						<div className="course-list">{courses.map((course, index) => <CourseItem key={course.id} course={course} onSelect={onSelect} onDelete={onDelete} onQuickAdd={onQuickAdd} semesterWeeks={semesterWeeks} denialPercent={denialPercent} lastUpdatedId={lastUpdatedId} style={{ animationDelay: `${index * 100}ms` }} />)}</div>
 					}
 				</div>
 			);
@@ -1176,7 +1169,7 @@
 			);
 		}
 
-		function AbsenceCalculator({ onSave, isEditing, onClear, courseData, onCourseDataChange, courses, semesterWeeks }) {
+		function AbsenceCalculator({ onSave, isEditing, onClear, courseData, onCourseDataChange, courses, semesterWeeks, denialPercent }) {
 			const { name, lectureHours, absenceHours, excusedHours = "" } = courseData;
 			const [showExcused, setShowExcused] = useState(() => (Number(excusedHours) || 0) > 0);
 
@@ -1184,10 +1177,10 @@
 				const absenceNum = Number(absenceHours) || 0;
 				const excusedNum = Number(excusedHours) || 0;
 				const total = semesterWeeks * lectureHours;
-				const allowed = Math.floor(total * CONSTANTS.DENIAL_PERCENTAGE);
+				const allowed = Math.floor(total * denialPercent / 100);
 				const denial = allowed + 1;
 				const percentage = total > 0 ? Math.min(100, (absenceNum / total) * 100) : 0;
-				const { name: status, isDenied, remaining, excusedRemaining } = getCourseStatus({ absenceHours: absenceNum, excusedHours: excusedNum, lectureHours }, semesterWeeks);
+				const { name: status, isDenied, remaining, excusedRemaining } = getCourseStatus({ absenceHours: absenceNum, excusedHours: excusedNum, lectureHours }, semesterWeeks, denialPercent);
 				
 				let predictiveText = "";
 				if (!isDenied) {
@@ -1199,7 +1192,7 @@
 				}
 				
 				return { percentage, status, predictiveText, allowed, denial, excusedNum, isDenied };
-			}, [lectureHours, absenceHours, excusedHours, semesterWeeks]);
+			}, [lectureHours, absenceHours, excusedHours, semesterWeeks, denialPercent]);
 
 			const handleSubmit = (e) => {
 				e.preventDefault();
@@ -1258,7 +1251,7 @@
 					<div class="swal-example-box"><strong>مثال:</strong> لمقرر محاضرتين بالأسبوع، وكل محاضرة مدتها ساعتان، بالتالي ساعات الحضور الأسبوعية = <strong>4 ساعات</strong>.</div>
 					<hr/>
 					<h4><span style="font-size: 1.3em; color: var(--color-danger-red);">${ReactDOMServer.renderToString(<Icons.IconEquation/>)}</span> ثانياً: معادلة الحرمان</h4>
-					<p>يتم الحرمان عند تجاوز نسبة الغياب <strong style="color: var(--color-danger-red);">25%</strong> من مجموع الساعات الدراسية الفعلية للمقرر.</p>
+					<p>يتم الحرمان عند تجاوز نسبة الغياب <strong style="color: var(--color-danger-red);">${denialPercent}%</strong> من مجموع الساعات الدراسية الفعلية للمقرر.</p>
 					<hr/>
 					<h4><span style="font-size: 1.3em; color: var(--color-warning-gold);">${ReactDOMServer.renderToString(<Icons.IconCalendar/>)}</span> ثالثاً: تحديد عدد الأسابيع</h4>
 					<p>يتم حساب الغياب على أساس عدد الأسابيع الفعلية للدراسة، ويمكنك ضبط هذا العدد من الإعدادات ⚙️.</p>
@@ -1307,7 +1300,7 @@
 					const rows = [];
 					for (let i = 1; i <= 12; i++) {
 						const total = semesterWeeks * i;
-						const allowed = Math.floor(total * CONSTANTS.DENIAL_PERCENTAGE);
+						const allowed = Math.floor(total * denialPercent / 100);
 						rows.push([formatHoursPlural(i), formatHoursPlural(allowed), formatHoursPlural(allowed + 1)]);
 					}
 
@@ -1379,7 +1372,7 @@
 					ctx.fillStyle = '#e6e8ec';
 					ctx.fillText(semText, width / 2, semY + semH / 2 + 3);
 
-					const pillText = `محسوبة على ${formatWeeksText(semesterWeeks)} دراسية`;
+					const pillText = `محسوبة على ${formatWeeksText(semesterWeeks)} دراسية · نسبة الحرمان ${denialPercent}%`;
 					ctx.font = '700 30px Cairo, sans-serif';
 					const pillW = ctx.measureText(pillText).width + 80;
 					const pillH = 58, pillY = 296;
@@ -1486,7 +1479,7 @@
 				let tableRowsHtml = '';
 				for (let i = 1; i <= 12; i++) {
 					const total = semesterWeeks * i;
-					const allowed = Math.floor(total * CONSTANTS.DENIAL_PERCENTAGE);
+					const allowed = Math.floor(total * denialPercent / 100);
 					const denial = allowed + 1;
 					tableRowsHtml += `
 						<tr>
@@ -1499,7 +1492,7 @@
 
 				const tableHtml = `
 					<p style="text-align:right; font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 1rem;">
-						الجدول التالي محسوب بناءً على <span class="highlight-weeks">${formatWeeksText(semesterWeeks)}</span> دراسية. يمكنك تغييرها من الإعدادات ⚙️.
+						الجدول التالي محسوب بناءً على <span class="highlight-weeks">${formatWeeksText(semesterWeeks)}</span> دراسية ونسبة حرمان <span class="highlight-weeks">${denialPercent}%</span>. يمكنك تغييرهما من الإعدادات ⚙️.
 					</p>
 					<div class="swal-table-container">
 						<table class="swal-info-table">
@@ -1548,28 +1541,28 @@
 
 			const showExcusedAbsenceInfo = () => {
 				const exampleHours = 2;
-				const unexcusedAllowed = Math.floor(exampleHours * semesterWeeks * 0.25);
-				const excusedAllowed = Math.floor(exampleHours * semesterWeeks * 0.25);
+				const unexcusedAllowed = Math.floor(exampleHours * semesterWeeks * denialPercent / 100);
+				const excusedAllowed = Math.floor(exampleHours * semesterWeeks * denialPercent / 100);
 
 				const explanationHtml = `
 				<div class="swal-explanation-content">
 					<h4><span style="font-size: 1.3em; color: var(--color-danger-red);">${ReactDOMServer.renderToString(<Icons.WarningCircle/>)}</span> الغياب بدون عذر</h4>
-					<p>يُسمح لك بالغياب بدون عذر مقبول بنسبة لا تتجاوز 25% من الساعات الدراسية للمقرر.</p>
+					<p>يُسمح لك بالغياب بدون عذر مقبول بنسبة لا تتجاوز ${denialPercent}% من الساعات الدراسية للمقرر.</p>
 					<hr/>
 					<h4><span style="font-size: 1.3em; color: var(--color-primary);">${ReactDOMServer.renderToString(<Icons.ShieldCheck/>)}</span> الغياب بعذر</h4>
-					<p>يُسمح لك بالغياب بعذر مقبول بنسبة لا تتجاوز 25% أيضًا، وهو حد منفصل عن الغياب بدون عذر.</p>
+					<p>يُسمح لك بالغياب بعذر مقبول بنسبة لا تتجاوز ${denialPercent}% أيضًا، وهو حد منفصل عن الغياب بدون عذر.</p>
 					<hr/>
 					<h4><span style="font-size: 1.3em; color: var(--color-warning-gold);">${ReactDOMServer.renderToString(<Icons.Lightbulb/>)}</span> مثال توضيحي</h4>
 					<div class="swal-example-box">
 						<p style="margin-bottom: 0.5rem;">لمقرر <strong>بساعتين أسبوعيًا</strong> (<span class="highlight-weeks">على مدى ${formatWeeksText(semesterWeeks)}</span>):</p>
 						<ul style="padding-right: 20px; margin-top: 0.5rem; margin-bottom: 0;">
-							<li style="margin-bottom: 0.5rem;"><strong>الغياب بدون عذر (25%):</strong> ${formatHoursPlural(unexcusedAllowed)}</li>
-							<li><strong>الغياب بعذر (25%):</strong> ${formatHoursPlural(excusedAllowed)}</li>
+							<li style="margin-bottom: 0.5rem;"><strong>الغياب بدون عذر (${denialPercent}%):</strong> ${formatHoursPlural(unexcusedAllowed)}</li>
+							<li><strong>الغياب بعذر (${denialPercent}%):</strong> ${formatHoursPlural(excusedAllowed)}</li>
 						</ul>
 					</div>
 					<hr/>
 					<h4><span style="font-size: 1.3em; color: var(--color-warning-gold);">${ReactDOMServer.renderToString(<Icons.WarningCircle/>)}</span> ملاحظة هامة ‼️</h4>
-					<p>ساعات الغياب بنوعيها منفصلة، ولكل نوع حد أقصى <strong>25%</strong>. تجاوز أي منهما يعتبر الطالب محرومًا من المقرر.</p>
+					<p>ساعات الغياب بنوعيها منفصلة، ولكل نوع حد أقصى <strong>${denialPercent}%</strong>. تجاوز أي منهما يعتبر الطالب محرومًا من المقرر.</p>
 					<div style="text-align: center; margin-top: 1.5rem;">
 						<a href="https://t.me/Qassim_R/349" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary); font-weight: 600; text-decoration: none; padding: 4px 8px; border-bottom: 1px solid;">
 							طريقة تقديم أعذار الغياب
@@ -1658,7 +1651,7 @@
 								<div className="label-icon-actions">
 									<div className="info-tooltip-wrapper">
 										<Icons.ShieldCheck />
-										<span className="info-tooltip">الغياب بعذر مقبول له حد منفصل: 25% من ساعات المقرر، تمامًا مثل الغياب بدون عذر. تجاوز أي منهما يؤدي للحرمان.</span>
+										<span className="info-tooltip">الغياب بعذر مقبول له حد منفصل: {denialPercent}% من ساعات المقرر، تمامًا مثل الغياب بدون عذر. تجاوز أي منهما يؤدي للحرمان.</span>
 									</div>
 									<button type="button" className="excused-remove-btn" onClick={hideExcused} title="إزالة الغياب بعذر"><Icons.Plus /></button>
 								</div>
@@ -1707,6 +1700,9 @@
 			const [sortOrder, setSortOrder] = useState('urgency');
 			const [theme, setTheme] = useLocalStorage('theme', PRESET_THEMES.blue);
 			const [semesterWeeks, setSemesterWeeks] = useLocalStorage('semesterWeeks', CONSTANTS.RECOMMENDED_WEEKS);
+			const [denialPercent, setDenialPercent] = useLocalStorage('denialPercent', CONSTANTS.DEFAULT_DENIAL_PERCENT);
+			const [isCustomPercent, setIsCustomPercent] = useState(() => !CONSTANTS.DENIAL_PRESETS.includes(denialPercent));
+			const [customPercentInput, setCustomPercentInput] = useState(() => String(denialPercent));
 			const [lastUpdatedId, setLastUpdatedId] = useState(null);
 			const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 			const [subtitle, setSubtitle] = useState(SUBTITLES[0]);
@@ -1818,7 +1814,7 @@
                 }
 
                 if (!updatedCourse) return;
-                const { name: status, remaining, isDenied } = getCourseStatus(updatedCourse, semesterWeeks);
+                const { name: status, remaining, isDenied } = getCourseStatus(updatedCourse, semesterWeeks, denialPercent);
                 let toastOptions = { icon: 'success', title: `تم تحديث غياب مقرر ${updatedCourse.name} بنجاح` };
                 if (isDenied) {
                     toastOptions = { icon: 'error', title: `لقد وصلت إلى الحرمان في مقرر ${updatedCourse.name}!` };
@@ -1827,7 +1823,7 @@
                     toastOptions = { icon: 'warning', title: `تحذير: غياب ${remainingText} أخرى سيؤدي للحرمان من مقرر ${updatedCourse.name}` };
                 }
                 Toast.fire(toastOptions);
-            }, [courses, setCourses, semesterWeeks, selectedCourse]);
+            }, [courses, setCourses, semesterWeeks, denialPercent, selectedCourse]);
 
 			const handleDelete = (id) => {
 				Swal.fire({
@@ -1850,7 +1846,7 @@
 
             const handleExportData = () => {
 				try {
-					const backup = { app: 'absence-calculator', version: 1, exportedAt: new Date().toISOString(), semesterWeeks, courses };
+					const backup = { app: 'absence-calculator', version: 1, exportedAt: new Date().toISOString(), semesterWeeks, denialPercent, courses };
 					const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
 					const url = URL.createObjectURL(blob);
 					const a = document.createElement('a');
@@ -1891,6 +1887,9 @@
 						setCourses(cleaned);
 						if (data.semesterWeeks && data.semesterWeeks >= CONSTANTS.MIN_WEEKS && data.semesterWeeks <= CONSTANTS.MAX_WEEKS) {
 							setSemesterWeeks(data.semesterWeeks);
+						}
+						if (data.denialPercent && data.denialPercent >= CONSTANTS.MIN_DENIAL_PERCENT && data.denialPercent <= CONSTANTS.MAX_DENIAL_PERCENT) {
+							applyDenialPercent(Number(data.denialPercent));
 						}
 						setSelectedCourse(null);
 						setIsSettingsOpen(false);
@@ -1941,8 +1940,8 @@
 
 			const sortedCourses = useMemo(() => {
 				return [...courses].filter(c => c.name !== 'حساب سريع').sort((a, b) => {
-                    const statusA = getCourseStatus(a, semesterWeeks);
-                    const statusB = getCourseStatus(b, semesterWeeks);
+                    const statusA = getCourseStatus(a, semesterWeeks, denialPercent);
+                    const statusB = getCourseStatus(b, semesterWeeks, denialPercent);
                     switch (sortOrder) {
                         case 'recent': return b.lastUpdated - a.lastUpdated;
                         case 'alpha': return a.name.localeCompare(b.name, 'ar');
@@ -1954,7 +1953,7 @@
                             return percentageB - percentageA;
                     }
                 });
-			}, [courses, sortOrder, semesterWeeks]);
+			}, [courses, sortOrder, semesterWeeks, denialPercent]);
 			
 			const coursesForDisplay = useMemo(() => {
 				if (!selectedCourse) return sortedCourses;
@@ -1966,6 +1965,51 @@
             const isCustomTheme = !Object.values(PRESET_THEMES).includes(theme);
 			const visibleCourses = coursesForDisplay.filter(c => c.name && c.name !== 'حساب سريع');
 			
+			const applyDenialPercent = (value) => {
+				setDenialPercent(value);
+				setCustomPercentInput(String(value));
+				setIsCustomPercent(!CONSTANTS.DENIAL_PRESETS.includes(value));
+			};
+
+			const handlePercentOptionChange = (value) => {
+				if (value === 'custom') {
+					setIsCustomPercent(true);
+					setCustomPercentInput(String(denialPercent));
+					return;
+				}
+				handlePresetPercent(value);
+			};
+
+			const handlePresetPercent = (value) => {
+				setIsCustomPercent(false);
+				setDenialPercent(value);
+				setCustomPercentInput(String(value));
+			};
+
+			const handleCustomPercentChange = (rawValue) => {
+				let cleaned = rawValue.replace(/[^0-9]/g, '').slice(0, 3);
+				if (cleaned && Number(cleaned) > CONSTANTS.MAX_DENIAL_PERCENT) {
+					cleaned = String(CONSTANTS.MAX_DENIAL_PERCENT);
+				}
+				setCustomPercentInput(cleaned);
+				const parsed = Number(cleaned);
+				if (cleaned && parsed >= CONSTANTS.MIN_DENIAL_PERCENT) {
+					setDenialPercent(parsed);
+				}
+			};
+
+			const handleCustomPercentBlur = () => {
+				const parsed = Number(customPercentInput);
+				if (!customPercentInput || parsed < CONSTANTS.MIN_DENIAL_PERCENT || parsed > CONSTANTS.MAX_DENIAL_PERCENT) {
+					setCustomPercentInput(String(denialPercent));
+				}
+			};
+
+			const percentOptions = useMemo(() => [
+				...CONSTANTS.DENIAL_PRESETS.map(preset => ({ value: preset, label: `${preset}%` })),
+				{ value: 'custom', label: 'حدد نسبة' }
+			], []);
+
 			const weekOptions = useMemo(() => 
 				[...Array(CONSTANTS.MAX_WEEKS - CONSTANTS.MIN_WEEKS + 1).keys()].map(i => {
 					const weekCount = CONSTANTS.MIN_WEEKS + i;
@@ -1995,6 +2039,7 @@
 							onClear={handleClear} 
 							courses={courses}
                             semesterWeeks={semesterWeeks}
+							denialPercent={denialPercent}
 							courseData={formData}
 							onCourseDataChange={handleFormChange}
 						/>
@@ -2007,6 +2052,7 @@
 							sortOrder={sortOrder} 
 							onSortChange={setSortOrder} 
 							semesterWeeks={semesterWeeks} 
+							denialPercent={denialPercent} 
 							lastUpdatedId={lastUpdatedId} 
 						/>}
 						
@@ -2035,6 +2081,41 @@
 										<div className="recommendation-message warning">
 											<Icons.WarningCircle />
 											<span>العدد الموصى به هو {CONSTANTS.RECOMMENDED_WEEKS} أسابيع.</span>
+										</div>
+									)}
+									<div className="settings-item">
+										<h4>نسبة الحرمان</h4>
+										<div style={{ width: '130px' }}>
+											<ActionPicker options={percentOptions} value={isCustomPercent ? 'custom' : denialPercent} onChange={handlePercentOptionChange} />
+										</div>
+									</div>
+									{isCustomPercent && (
+										<div className="settings-item excused-reveal">
+											<h4>النسبة المخصصة</h4>
+											<div className="percent-custom-row" style={{ width: '130px' }}>
+												<input
+													type="text"
+													inputMode="numeric"
+													maxLength={3}
+													className="percent-custom-input"
+													value={customPercentInput}
+													placeholder="30"
+													onChange={(e) => handleCustomPercentChange(e.target.value)}
+													onBlur={handleCustomPercentBlur}
+												/>
+												<span className="percent-custom-sign">%</span>
+											</div>
+										</div>
+									)}
+									{denialPercent === CONSTANTS.DEFAULT_DENIAL_PERCENT ? (
+										<div className="recommendation-message correct compact">
+											<Icons.CheckCircle />
+											<span>هذه هي النسبة المعتمدة في لائحة الجامعة</span>
+										</div>
+									) : (
+										<div className="recommendation-message warning compact">
+											<Icons.WarningCircle />
+											<span>هذه النسبة مخصصة لبعض التخصصات</span>
 										</div>
 									)}
 								</div>
