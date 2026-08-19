@@ -798,9 +798,9 @@
 			MAX_DENIAL_PERCENT: 100,
 			MIN_WEEKS: 7, 
 			MAX_WEEKS: 20,
-			RECOMMENDED_WEEKS: 8, 
+			RECOMMENDED_WEEKS: 17, 
             OFFICIAL_WEEKS: 20,
-			RECOMMENDED_SEMESTER_NAME: "الصيفي 475"
+			RECOMMENDED_SEMESTER_NAME: "الفصل الدراسي الأول 481"
 		};
 		const PRESET_THEMES = {
 			blue: '#5e9cff',
@@ -1700,6 +1700,12 @@
 			const [sortOrder, setSortOrder] = useState('urgency');
 			const [theme, setTheme] = useLocalStorage('theme', PRESET_THEMES.blue);
 			const [semesterWeeks, setSemesterWeeks] = useLocalStorage('semesterWeeks', CONSTANTS.RECOMMENDED_WEEKS);
+			useEffect(() => {
+				if (!localStorage.getItem('weeksMigratedTo17')) {
+					setSemesterWeeks(CONSTANTS.RECOMMENDED_WEEKS);
+					localStorage.setItem('weeksMigratedTo17', '1');
+				}
+			}, []);
 			const [denialPercent, setDenialPercent] = useLocalStorage('denialPercent', CONSTANTS.DEFAULT_DENIAL_PERCENT);
 			const [isCustomPercent, setIsCustomPercent] = useState(() => !CONSTANTS.DENIAL_PRESETS.includes(denialPercent));
 			const [customPercentInput, setCustomPercentInput] = useState(() => String(denialPercent));
